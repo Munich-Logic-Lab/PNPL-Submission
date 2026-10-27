@@ -91,18 +91,4 @@ PY=.venv/bin/python bash scripts/train_repro6.sh v2re12 2 2
 
 Checkpoints land in `ckpts_retrain/`; pass them to `scripts/build_final.py` as in `reproduce_inference.sh`.
 Wall time on one RTX 5090: ≈1.5 h per call. GPU training is not bit-deterministic, so retrained members
-differ slightly from the shipped checkpoints (see verification below).
-
-## Verification (TUM CIT lab GPUs, 2026-10-27)
-
-| check | where | result |
-| --- | --- | --- |
-| checkpoint sha256 = training-time bundle manifest | nc-9-3-1 | all 6 match |
-| full checkpoints → 6 member CSVs (development repo, existing venv) | nc-9-3-1, RTX 5090 | byte-identical to `submission/members/` |
-| full checkpoints → final CSV | nc-9-3-1, RTX 5090 | byte-identical to the submitted CSV (`a084cb9c…`) |
-| **this repository** in a fresh directory: new venv from `requirements-lock.txt`, holdout and Qwen downloaded fresh, slim checkpoints, `scripts/reproduce_inference.sh` | nc-9-1-1, RTX 5090, driver 590.48 / CUDA 13.1 | `REPRODUCED: byte-identical` (6 member CSVs and final CSV) |
-| members retrained from scratch with `scripts/train_repro6.sh` | nc-9-3-1, RTX 5090 | in progress |
-
-## Contact
-
-Munich Logic Lab. Kaggle team "Munich Logic Lab".
+differ slightly from the shipped checkpoints.
