@@ -1,0 +1,8 @@
+.venv/
+data/
+out/
+ckpts_retrain/
+lightning_logs/
+hybrid_*.log
+__pycache__/
+*.pyc

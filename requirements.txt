@@ -1,0 +1,18 @@
+# Python 3.12, CUDA 12.8 wheels (RTX 50xx needs torch >= 2.7). Full pinned set: requirements-lock.txt
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0+cu128
+lightning==2.6.6
+pnpl==0.2.0
+numpy==2.5.3
+pandas==3.0.6
+scipy==1.18.1
+scikit-learn==1.9.1
+transformers==5.17.0
+tokenizers==0.23.2
+safetensors==0.8.0
+huggingface_hub==1.33.0
+sentencepiece==0.2.2
+pyarrow==25.0.1
+tensorboard==2.21.0
+torchmetrics==1.9.0
+cmudict==1.1.3
