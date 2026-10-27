@@ -90,5 +90,6 @@ PY=.venv/bin/python bash scripts/train_repro6.sh v2re12 2 2
 ```
 
 Checkpoints land in `ckpts_retrain/`; pass them to `scripts/build_final.py` as in `reproduce_inference.sh`.
-Wall time on one RTX 5090: ≈1.5 h per call. GPU training is not bit-deterministic, so retrained members
-differ slightly from the shipped checkpoints.
+Wall time on one RTX 5090: ≈1.5 h per call. On the same GPU type and pinned environment the training is deterministic:
+retrained members came out bit-identical to the shipped checkpoints (5 of 6 checked). Small stage B needs
+~23 GB of GPU memory; re-running a call skips stages that already finished.
