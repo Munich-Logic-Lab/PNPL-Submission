@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Rebuild the final Deep submission (submission/r6_pc1.5.csv) from checkpoints/
-# and check it byte-for-byte against the submitted file.
+# and compare it with the submitted file. The score depends only on each row's top-10
+# words, so the check is: identical top-10 set on every row. Probabilities agree up to
+# float noise; they are byte-identical only on the original machine and software stack.
 #
 #   bash scripts/reproduce_inference.sh            # PY=/path/to/venv/bin/python to override
 #
@@ -28,5 +30,17 @@ $PY scripts/build_final.py \
 
 OUT=out/r6_pc1.5/fused_lam0.25_g0.0_pc1.5.csv
 sha256sum "$OUT" submission/r6_pc1.5.csv
-if cmp -s "$OUT" submission/r6_pc1.5.csv; then echo "REPRODUCED: byte-identical to submission/r6_pc1.5.csv"
-else echo "MISMATCH: $OUT differs from submission/r6_pc1.5.csv"; exit 1; fi
+cmp -s "$OUT" submission/r6_pc1.5.csv && echo "byte-identical to submission/r6_pc1.5.csv"
+$PY - "$OUT" submission/r6_pc1.5.csv <<'EOF_PY'
+import sys, numpy as np, pandas as pd
+a, b = (pd.read_csv(f, index_col=0) for f in sys.argv[1:3])
+assert a.shape == b.shape and (a.index == b.index).all() and (a.columns == b.columns).all(), "CSV layout differs"
+dp = np.abs(a.to_numpy(float) - b.to_numpy(float)).max()
+words = ~a.columns.str.startswith("moses_")   # the moses_* columns are a constant placeholder in the Deep track
+a, b = a.loc[:, words].to_numpy(float), b.loc[:, words].to_numpy(float)
+top = lambda x: np.sort(np.argsort(-x, axis=1, kind="stable")[:, :10], axis=1)
+same = (top(a) == top(b)).all(axis=1)
+print(f"rows with identical top-10: {same.sum()}/{len(same)}   max |dp|: {dp:.2e}")
+if same.all(): print("REPRODUCED: same top-10 predictions as submission/r6_pc1.5.csv (same score)")
+else: print("MISMATCH: top-10 differs on", (~same).sum(), "rows"); sys.exit(1)
+EOF_PY

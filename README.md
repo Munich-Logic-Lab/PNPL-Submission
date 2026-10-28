@@ -56,7 +56,7 @@ they load with `LitHybridTCN.load_from_checkpoint` and give byte-identical predi
 ```
 checkpoints/            6 member checkpoints (weights + hyper-parameters)
 submission/r6_pc1.5.csv the submitted CSV;  submission/members/  per-member holdout probabilities
-scripts/reproduce_inference.sh   checkpoints -> submitted CSV, byte-for-byte check
+scripts/reproduce_inference.sh   checkpoints -> submitted CSV, compared with the submitted file
 scripts/build_final.py           member inference -> ensemble -> LM fusion -> prior correction
 scripts/submit_tcn_hybrid_holdout.py, lm_fuse.py, prior_correct.py   the three pipeline stages
 scripts/train_repro6.sh          trains the six members from scratch (exact flags + seeds)
@@ -76,7 +76,15 @@ PY=.venv/bin/python bash scripts/reproduce_inference.sh
 
 The script downloads the Deep holdout (`pnpl`, into `data/holdout/`) and Qwen2.5-1.5B (HF hub, pinned
 revision), runs the six members on the holdout, fuses, corrects, and compares the result with
-`submission/r6_pc1.5.csv` byte for byte. Needs one CUDA GPU with ≥ 12 GB (Qwen in fp32).
+`submission/r6_pc1.5.csv`. Needs one CUDA GPU with ≥ 12 GB (Qwen in fp32).
+
+BAcc@10 depends only on the ten highest-ranked words per row, so the check passes when every one of the 960
+rows has the same top-10 set of the 50 Deep words as the submitted file; it also prints the largest probability difference.
+The probabilities themselves agree only up to floating-point noise: a different GPU, driver, CUDA/cuDNN
+build or CPU changes the last digits.
+The file is byte-identical only on the original machine and software stack. Make sure the venv's own CUDA
+libraries are used: a system `LD_LIBRARY_PATH` that points to other CUDA/cuDNN libraries can override the
+pip wheels and make the differences larger.
 
 ## Train the members from scratch
 
